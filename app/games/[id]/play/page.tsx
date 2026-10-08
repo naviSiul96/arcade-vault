@@ -2,17 +2,21 @@
 
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { GAMES } from '@/app/data';
 import { useUser } from '@/app/context/UserContext';
+import AsteroidsCanvas from '@/components/games/AsteroidsCanvas';
+import type { AsteroidsHandle } from '@/lib/games/asteroids/types';
 
 export default function GamePlayer({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const game = GAMES.find(g => g.id === id);
   const { user } = useUser();
+  const isRocas = id === 'rocas';
+  const asteroidsRef = useRef<AsteroidsHandle>(null);
 
   const [score, setScore] = useState(0);
-  const [lives] = useState(3);
+  const [lives, setLives] = useState(3);
   const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
@@ -22,17 +26,38 @@ export default function GamePlayer({ params }: { params: Promise<{ id: string }>
   if (!game) notFound();
 
   useEffect(() => {
-    if (over || paused) return;
+    if (isRocas || over || paused) return;
     const t = setInterval(() => setScore(s => s + Math.floor(10 + Math.random() * 90)), 220);
     return () => clearInterval(t);
-  }, [over, paused]);
+  }, [isRocas, over, paused]);
 
   useEffect(() => {
+    if (isRocas) return;
     if (score > 0 && score % 2500 < 100) setLevel(l => l + 1);
-  }, [score]);
+  }, [isRocas, score]);
+
+  // Con el modal de Game Over abierto el motor queda en pausa
+  useEffect(() => {
+    if (isRocas && over) asteroidsRef.current?.pause();
+  }, [isRocas, over]);
+
+  function togglePause() {
+    if (isRocas) {
+      if (paused) asteroidsRef.current?.resume();
+      else asteroidsRef.current?.pause();
+    }
+    setPaused(p => !p);
+  }
+
+  function finish() {
+    if (isRocas) asteroidsRef.current?.end(); // el motor responde con onGameOver
+    else setOver(true);
+  }
 
   function restart() {
+    asteroidsRef.current?.restart();
     setScore(0);
+    setLives(3);
     setLevel(1);
     setPaused(false);
     setOver(false);
@@ -62,10 +87,10 @@ export default function GamePlayer({ params }: { params: Promise<{ id: string }>
           </div>
         </div>
         <div className="hud-actions">
-          <button className="btn yellow" onClick={() => setPaused(p => !p)}>
+          <button className="btn yellow" onClick={togglePause}>
             {paused ? 'REANUDAR' : 'PAUSA'}
           </button>
-          <button className="btn magenta" onClick={() => setOver(true)}>FIN</button>
+          <button className="btn magenta" onClick={finish}>FIN</button>
           <Link href={`/games/${id}`} className="btn ghost">SALIR</Link>
         </div>
       </div>
@@ -73,11 +98,26 @@ export default function GamePlayer({ params }: { params: Promise<{ id: string }>
       <div className="crt">
         <div className="crt-screen">
           <div className="game-arena">
-            <div className="grid-floor" />
-            <div className="enemy e1" />
-            <div className="enemy e2" />
-            <div className="enemy e3" />
-            <div className="player-ship" />
+            {isRocas ? (
+              <AsteroidsCanvas
+                ref={asteroidsRef}
+                onScore={setScore}
+                onLives={setLives}
+                onLevel={setLevel}
+                onGameOver={finalScore => {
+                  setScore(finalScore);
+                  setOver(true);
+                }}
+              />
+            ) : (
+              <>
+                <div className="grid-floor" />
+                <div className="enemy e1" />
+                <div className="enemy e2" />
+                <div className="enemy e3" />
+                <div className="player-ship" />
+              </>
+            )}
           </div>
           {paused && (
             <div className="crt-content" style={{ background: 'rgba(0,0,0,0.6)', zIndex: 5 }}>
