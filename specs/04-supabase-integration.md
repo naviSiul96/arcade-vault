@@ -1,6 +1,6 @@
 # SPEC 04 — Integración con Supabase
 
-> **Estado:** Aprobado · **Depende de:** 03-about-page-contact-resend · **Fecha:** 2026-10-08
+> **Estado:** Implementado · **Depende de:** 03-about-page-contact-resend · **Fecha:** 2026-10-08
 > **Objetivo:** Conectar la app Next.js al proyecto Supabase existente con clientes de
 > browser y servidor, refresco de sesión en `proxy.ts` y un endpoint de salud que
 > verifica la conexión.
