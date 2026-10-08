@@ -8,27 +8,24 @@ import { useUser } from '@/app/context/UserContext';
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { username, avatarUrl, signOut } = useUser();
+  const { user, signOut } = useUser();
 
   const isLibrary = pathname.startsWith('/games');
   const isHall = pathname === '/hall-of-fame';
   const isAbout = pathname === '/about';
-  const isPlayPage = pathname.endsWith('/play');
 
   function close() {
     setOpen(false);
   }
 
-  async function handleSignOut() {
-    await signOut();
+  function handleSignOut() {
+    signOut();
     close();
   }
 
-  const initial = username ? username[0].toUpperCase() : null;
-
   return (
     <>
-      <nav className={`av-nav${isPlayPage ? ' nav-hide-mobile' : ''}`}>
+      <nav className="av-nav">
         <Link href="/" className="logo" onClick={close}>
           <div className="logo-mark" />
           <div className="logo-text neon-cyan">
@@ -55,61 +52,13 @@ export default function Nav() {
           <span>CRÉDITOS · 03</span>
         </div>
 
-        {username ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: '2px solid var(--neon-cyan)',
-                boxShadow: '0 0 8px var(--neon-cyan)',
-                flexShrink: 0,
-                background: 'var(--bg-card)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarUrl}
-                  alt={username}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              ) : (
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: 'var(--neon-cyan)',
-                    lineHeight: 1,
-                  }}
-                >
-                  {initial}
-                </span>
-              )}
-            </div>
-            <span
-              style={{
-                fontSize: 12,
-                fontFamily: 'var(--font-mono)',
-                letterSpacing: '0.08em',
-                color: 'var(--ink)',
-              }}
-            >
-              {username}
-            </span>
-            <button className="btn ghost auth-btn" onClick={handleSignOut}>
-              CERRAR SESIÓN
-            </button>
-          </div>
+        {user ? (
+          <button className="btn ghost auth-btn" onClick={handleSignOut}>
+            {user} ▾
+          </button>
         ) : (
           <Link href="/auth" className="btn auth-btn">
-            ACCESO
+            Iniciar Sesión
           </Link>
         )}
 
@@ -123,23 +72,17 @@ export default function Nav() {
       </nav>
 
       <div
-        className={`av-mobile-backdrop${open ? ' open' : ''}${isPlayPage ? ' nav-hide-mobile' : ''}`}
+        className={`av-mobile-backdrop${open ? ' open' : ''}`}
         onClick={close}
       />
-      <aside
-        className={`av-mobile-panel${open ? ' open' : ''}${isPlayPage ? ' nav-hide-mobile' : ''}`}
-      >
+      <aside className={`av-mobile-panel${open ? ' open' : ''}`}>
         <div
           className="pixel neon-cyan"
           style={{ fontSize: 11, marginBottom: 16 }}
         >
           MENÚ
         </div>
-        <Link
-          href="/games"
-          className={isLibrary ? 'active' : ''}
-          onClick={close}
-        >
+        <Link href="/games" className={isLibrary ? 'active' : ''} onClick={close}>
           Biblioteca
         </Link>
         <Link
@@ -149,26 +92,20 @@ export default function Nav() {
         >
           Salón de la Fama
         </Link>
-        <Link href="/about" className={isAbout ? 'active' : ''} onClick={close}>
+        <Link
+          href="/about"
+          className={isAbout ? 'active' : ''}
+          onClick={close}
+        >
           Sobre Nosotros
         </Link>
-        {username ? (
-          <button
-            className="btn ghost"
-            style={{ textAlign: 'left', padding: 0, marginTop: 8 }}
-            onClick={handleSignOut}
-          >
-            CERRAR SESIÓN ({username})
-          </button>
-        ) : (
-          <Link
-            href="/auth"
-            className={pathname === '/auth' ? 'active' : ''}
-            onClick={close}
-          >
-            ACCESO
-          </Link>
-        )}
+        <Link
+          href="/auth"
+          className={pathname === '/auth' ? 'active' : ''}
+          onClick={close}
+        >
+          {user ? 'Cuenta' : 'Iniciar Sesión'}
+        </Link>
         <div style={{ flex: 1 }} />
         <div
           className="pixel"

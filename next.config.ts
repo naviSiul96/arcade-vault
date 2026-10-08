@@ -1,15 +1,7 @@
-import type { NextConfig } from 'next';
-
-const securityHeaders = [
-  { key: 'X-Content-Type-Options', value: 'nosniff' },
-  { key: 'X-Frame-Options', value: 'DENY' },
-  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'X-DNS-Prefetch-Control', value: 'off' },
-];
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.50.34'],
-  headers: async () => [{ source: '/(.*)', headers: securityHeaders }],
+  /* config options here */
 };
 
 export default nextConfig;

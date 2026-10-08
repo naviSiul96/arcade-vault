@@ -47,6 +47,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Comandos locales privados
-.claude/commands/telegram-send.md
